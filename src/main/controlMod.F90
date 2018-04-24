@@ -243,10 +243,8 @@ contains
     ! max number of plant functional types in naturally vegetated landunit
     namelist /clm_inparm/ maxpatch_pft
 
-! JP add
     ! flag for SSRE diagnostic
     namelist /clm_inparm/ use_SSRE
-! JP end
 
     namelist /clm_inparm/ &
          use_lch4, use_nitrif_denitrif, use_vertsoilc, use_extralakelayers, &

@@ -13,7 +13,6 @@ module SurfaceAlbedoMod
   use landunit_varcon   , only : istsoil, istcrop
   use clm_varcon        , only : grlnd, namep
   use clm_varpar        , only : numrad, nlevcan, nlevsno, nlevcan
-! JP changed:
   use clm_varctl        , only : fsurdat, iulog, use_snicar_frc, use_SSRE
   use pftconMod         , only : pftcon
   use SnowSnicarMod     , only : sno_nbr_aer, SNICAR_RT, DO_SNO_AER, DO_SNO_OC
@@ -39,9 +38,7 @@ module SurfaceAlbedoMod
   ! !PRIVATE MEMBER FUNCTIONS:
   private :: SoilAlbedo    ! Determine ground surface albedo
   private :: TwoStream     ! Two-stream fluxes for canopy radiative transfer
-! JP add
   private :: TwoStreamSF   ! Diagnostic Snow-free Two-stream fluxes for canopy radiative transfer
-! JP end
   !
   ! !PUBLIC DATA MEMBERS:
   ! The CLM default albice values are too high.
@@ -335,10 +332,8 @@ contains
           albsni_hst    =>    surfalb_inst%albsni_hst_col         , & ! Output:  [real(r8) (:,:) ]  snow ground albedo, diffuse, for history files (col,bnd) [frc]
           albd          =>    surfalb_inst%albd_patch             , & ! Output:  [real(r8) (:,:) ]  surface albedo (direct)               
           albi          =>    surfalb_inst%albi_patch             , & ! Output:  [real(r8) (:,:) ]  surface albedo (diffuse)              
-! JP add
           albdSF        =>    surfalb_inst%albdSF_patch           , & ! Output:  [real(r8) (:,:) ]  diagnostic snow-free surface albedo (direct)               
           albiSF        =>    surfalb_inst%albiSF_patch           , & ! Output:  [real(r8) (:,:) ]  diagnostic snow-free surface albedo (diffuse)              
-! JP end
           fabd          =>    surfalb_inst%fabd_patch             , & ! Output:  [real(r8) (:,:) ]  flux absorbed by canopy per unit direct flux
           fabd_sun      =>    surfalb_inst%fabd_sun_patch         , & ! Output:  [real(r8) (:,:) ]  flux absorbed by sunlit canopy per unit direct flux
           fabd_sha      =>    surfalb_inst%fabd_sha_patch         , & ! Output:  [real(r8) (:,:) ]  flux absorbed by shaded canopy per unit direct flux
@@ -402,12 +397,10 @@ contains
           p = filter_nourbanp(fp)
           albd(p,ib) = 1._r8
           albi(p,ib) = 1._r8
-! JP add
           if (use_SSRE) then
              albdSF(p,ib) = 1._r8
              albiSF(p,ib) = 1._r8
           end if
-! JP end
           fabd(p,ib) = 0._r8
           fabd_sun(p,ib) = 0._r8
           fabd_sha(p,ib) = 0._r8
@@ -945,7 +938,6 @@ contains
             rho(bounds%begp:bounds%endp, :), &
             tau(bounds%begp:bounds%endp, :), &
             canopystate_inst, temperature_inst, waterstate_inst, surfalb_inst)
-! JP add
        if (use_SSRE) then
           call TwoStreamSF (bounds, filter_vegsol, num_vegsol, &
                coszen_patch(bounds%begp:bounds%endp), &
@@ -953,7 +945,6 @@ contains
                tau(bounds%begp:bounds%endp, :), &
                canopystate_inst, temperature_inst, waterstate_inst, surfalb_inst)
        end if
-! JP end
     endif
 
     ! Determine values for non-vegetated patches where coszen > 0
@@ -973,12 +964,10 @@ contains
           ftii(p,ib)     = 1._r8
           albd(p,ib)     = albgrd(c,ib)
           albi(p,ib)     = albgri(c,ib)
-! JP add
           if (use_SSRE) then
              albdSF(p,ib)    = albsod(c,ib)
              albiSF(p,ib)    = albsoi(c,ib)
           end if
-! JP end
        end do
     end do
 
@@ -1626,11 +1615,13 @@ contains
 
 end subroutine TwoStream
 
-! JP add: this module for diagnostic
 subroutine TwoStreamSF (bounds, &
         filter_vegsol, num_vegsol, &
         coszen, rho, tau, &
         canopystate_inst, temperature_inst, waterstate_inst, surfalb_inst)
+
+     ! JP: This module for snow diagnostic. snow-free albedo calculated, 
+     !     but fluxes not applied
      !
      ! !DESCRIPTION:
      ! Two-stream fluxes for canopy radiative transfer
